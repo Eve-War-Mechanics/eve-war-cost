@@ -111,4 +111,334 @@
 
     .rule {
         border-top: 1px solid #2a3139;
+        padding: 12px 0;
+        color: #9da7b2;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .rule strong {
+        color: #e6e6e6;
+    }
+
+    @media (max-width: 600px) {
+        .results {
+            grid-template-columns: 1fr;
+        }
+
+        .card {
+            padding: 18px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="card">
+
+        <h1>EVE Online War Cost Calculator</h1>
+
+        <div class="subtitle">
+            Adjust the sliders to calculate the weekly war cost and surrender amount.
+        </div>
+
+        <!-- DEFENDING MEMBERS -->
+        <div class="section">
+
+            <div class="header">
+                <span>Defending Corporation Members</span>
+                <span class="value" id="membersValue">10</span>
+            </div>
+
+            <input
+                id="members"
+                type="range"
+                min="10"
+                max="500"
+                step="1"
+                value="10"
+            >
+
+            <div class="scale">
+                <span>10</span>
+                <span>100</span>
+                <span>200</span>
+                <span>300</span>
+                <span>400</span>
+                <span>500</span>
+            </div>
+
+        </div>
+
+        <!-- ATTACKER WARS -->
+        <div class="section">
+
+            <div class="header">
+                <span>Attacker Active Wars</span>
+                <span class="value" id="warsValue">1</span>
+            </div>
+
+            <input
+                id="wars"
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value="1"
+            >
+
+            <div class="scale">
+                <span>1</span>
+                <span>2</span>
+                <span>4</span>
+                <span>6</span>
+                <span>8</span>
+                <span>10+</span>
+            </div>
+
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results">
+
+            <div class="result">
+                <div class="label">Weekly War Cost</div>
+
+                <div class="amount" id="weekly">
+                    1,000,000,000 ISK
+                </div>
+
+                <div class="detail" id="weeklyDetail">
+                    1 active war × 1.00×
+                </div>
+            </div>
+
+            <div class="result">
+                <div class="label">Surrender Amount</div>
+
+                <div class="amount" id="surrender">
+                    250,000,000 ISK
+                </div>
+
+                <div class="detail">
+                    Available throughout the active war
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RULES -->
+        <div class="rules">
+
+            <h2>Rules</h2>
+
+            <div class="rule">
+                <strong>Defending corporation:</strong>
+                1–9 members are war immune. The calculator begins at 10 members.
+            </div>
+
+            <div class="rule">
+                <strong>10 members:</strong>
+                1,000,000,000 ISK base war cost per week.
+            </div>
+
+            <div class="rule">
+                <strong>10–20 members:</strong>
+                Cost decreases by 50,000,000 ISK per additional member,
+                reaching 500,000,000 ISK at 20.
+            </div>
+
+            <div class="rule">
+                <strong>20–500 members:</strong>
+                Cost decreases gradually to 0 ISK at 500 members.
+            </div>
+
+            <div class="rule">
+                <strong>Active wars:</strong>
+                1 war = 1.00×. The multiplier increases linearly to
+                2.00× at 10 wars. <strong>10+ wars remain capped at 2.00×.</strong>
+            </div>
+
+            <div class="rule">
+                <strong>Weekly bill:</strong>
+                Defender base cost × active-war multiplier.
+            </div>
+
+            <div class="rule">
+                <strong>War duration:</strong>
+                Maximum <strong>4 weeks</strong>. There is no automatic
+                extension beyond 4 weeks.
+            </div>
+
+            <div class="rule">
+                <strong>Automated surrender:</strong>
+                Available through the <strong>in-game system</strong> for the
+                entire time the war is active. The system processes the surrender.
+                <strong>Using surrender ends the war and starts a
+                4-week mandatory peace period.</strong>
+            </div>
+
+            <div class="rule">
+                <strong>War expiration:</strong>
+                If the war reaches the 4-week maximum, it ends automatically
+                and starts a <strong>4-week mandatory peace period</strong>.
+            </div>
+
+            <div class="rule">
+                <strong>Direct CEO agreement:</strong>
+                CEOs may meet in a station to bypass the automated system menus.
+                If both CEOs agree in person, they may
+                <strong>end the war directly</strong>.
+                <strong>No peace period applies.</strong>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+
+const membersSlider = document.getElementById("members");
+const warsSlider = document.getElementById("wars");
+
+const membersValue = document.getElementById("membersValue");
+const warsValue = document.getElementById("warsValue");
+
+const weeklyOutput = document.getElementById("weekly");
+const weeklyDetail = document.getElementById("weeklyDetail");
+
+const surrenderOutput = document.getElementById("surrender");
+
+
+function formatISK(value) {
+    return Math.round(value).toLocaleString("en-US") + " ISK";
+}
+
+
+function calculate() {
+
+    const members = Math.max(
+        10,
+        Math.min(500, Number(membersSlider.value) || 10)
+    );
+
+    const wars = Math.max(
+        1,
+        Math.min(10, Number(warsSlider.value) || 1)
+    );
+
+
+    /*
+        DEFENDING CORPORATION COST
+
+        10 members = 1B
+        20 members = 500M
+        500 members = FREE
+    */
+
+    let baseCost;
+
+    if (members <= 20) {
+
+        baseCost =
+            1000000000 -
+            (members - 10) * 50000000;
+
+    } else {
+
+        baseCost =
+            500000000 *
+            (500 - members) /
+            480;
+    }
+
+
+    /*
+        ACTIVE WAR MULTIPLIER
+
+        1 war  = 1.00x
+        10 wars = 2.00x
+        10+ wars remain capped at 2.00x
+    */
+
+    let multiplier;
+
+    if (wars >= 10) {
+
+        multiplier = 2;
+
+    } else {
+
+        multiplier =
+            1 +
+            (wars - 1) / 9;
+    }
+
+
+    /*
+        WEEKLY WAR COST
+    */
+
+    const weeklyCost =
+        Math.max(0, baseCost * multiplier);
+
+
+    /*
+        SURRENDER AMOUNT
+    */
+
+    let surrender;
+
+    if (members <= 20) {
+
+        surrender =
+            250000000 +
+            (members - 10) * 25000000;
+
+    } else {
+
+        surrender =
+            500000000 +
+            (members - 20) *
+            (500000000 / 480);
+    }
+
+
+    /*
+        UPDATE DISPLAY
+    */
+
+    membersValue.textContent = members;
+
+    warsValue.textContent =
+        wars >= 10 ? "10+" : wars;
+
+    weeklyOutput.textContent =
+        weeklyCost === 0
+            ? "FREE"
+            : formatISK(weeklyCost);
+
+    weeklyDetail.textContent =
+        (wars >= 10 ? "10+" : wars) +
+        " active wars × " +
+        multiplier.toFixed(2) +
+        "×";
+
+    surrenderOutput.textContent =
+        formatISK(surrender);
+}
+
+
+membersSlider.addEventListener("input", calculate);
+warsSlider.addEventListener("input", calculate);
+
+calculate();
+
+</script>
+
+</body>
+</html>
 ```
