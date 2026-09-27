@@ -1,0 +1,432 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EVE Online War Cost Calculator</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0b0e11;
+      color: #e6e6e6;
+      padding: 30px 15px;
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #151a20;
+      border: 1px solid #2a3139;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      margin: 0 0 30px;
+      color: #9da7b2;
+      font-size: 15px;
+    }
+
+    .slider-section {
+      margin-bottom: 30px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .slider-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .slider-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #58a6ff;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: #58a6ff;
+    }
+
+    .scale {
+      display: flex;
+      justify-content: space-between;
+      color: #707983;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .result {
+      margin-top: 10px;
+      padding: 25px;
+      border-radius: 10px;
+      background: #0e1318;
+      border: 1px solid #303942;
+      text-align: center;
+    }
+
+    .result-label {
+      color: #9da7b2;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .result-amount {
+      font-size: 38px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .result-subtitle {
+      margin-top: 8px;
+      color: #8b949e;
+      font-size: 14px;
+    }
+
+    .immune {
+      color: #ffb86c;
+    }
+
+    .free {
+      color: #7ee787;
+    }
+
+    .rules {
+      margin-top: 30px;
+    }
+
+    .rules h2 {
+      font-size: 21px;
+      margin: 0 0 18px;
+      color: #ffffff;
+    }
+
+    .rule {
+      padding: 15px 0;
+      border-top: 1px solid #292f36;
+      color: #b7c0ca;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .rule strong {
+      color: #ffffff;
+    }
+
+    .formula {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background: #0b0e11;
+      border-radius: 6px;
+      font-family: Consolas, monospace;
+      color: #8ecbff;
+      font-size: 13px;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px 10px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 25px;
+      }
+
+      .result-amount {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="card">
+
+      <h1>EVE Online War Cost Calculator</h1>
+      <p class="subtitle">
+        Weekly war cost based on defending corporation size and attacker active wars.
+      </p>
+
+      <!-- DEFENDING MEMBERS -->
+      <div class="slider-section">
+
+        <div class="slider-header">
+          <div class="slider-title">Defending Corporation Members</div>
+          <div class="slider-value" id="membersValue">10</div>
+        </div>
+
+        <input
+          type="range"
+          id="members"
+          min="10"
+          max="500"
+          step="1"
+          value="10"
+        >
+
+        <div class="scale">
+          <span>10</span>
+          <span>100</span>
+          <span>200</span>
+          <span>300</span>
+          <span>400</span>
+          <span>500</span>
+        </div>
+
+      </div>
+
+      <!-- ACTIVE WARS -->
+      <div class="slider-section">
+
+        <div class="slider-header">
+          <div class="slider-title">Attacker Active Wars</div>
+          <div class="slider-value" id="warsValue">1</div>
+        </div>
+
+        <input
+          type="range"
+          id="wars"
+          min="1"
+          max="10"
+          step="1"
+          value="1"
+        >
+
+        <div class="scale">
+          <span>1</span>
+          <span>2</span>
+          <span>4</span>
+          <span>6</span>
+          <span>8</span>
+          <span>10+</span>
+        </div>
+
+      </div>
+
+      <!-- RESULT -->
+      <div class="result">
+
+        <div class="result-label">
+          Weekly War Cost
+        </div>
+
+        <div class="result-amount" id="weeklyCost">
+          1,000,000,000 ISK
+        </div>
+
+        <div class="result-subtitle" id="resultDetails">
+          10 defenders × 1 active war
+        </div>
+
+      </div>
+
+      <!-- RULEBOOK -->
+      <div class="rules">
+
+        <h2>Rules</h2>
+
+        <div class="rule">
+          <strong>Defending corporation size</strong><br>
+          Corporations with fewer than 10 members are war immune.
+          A corporation must have at least 10 members to be declared war upon.
+        </div>
+
+        <div class="rule">
+          <strong>10 members</strong><br>
+          The base war cost starts at 1,000,000,000 ISK per week.
+        </div>
+
+        <div class="rule">
+          <strong>10–20 members</strong><br>
+          The cost drops rapidly from 1,000,000,000 ISK to 500,000,000 ISK.
+          Each additional member reduces the base cost by 50,000,000 ISK.
+          
+          <div class="formula">
+            Base Cost = 1,000,000,000 − (Members − 10) × 50,000,000
+          </div>
+        </div>
+
+        <div class="rule">
+          <strong>20–500 members</strong><br>
+          The base cost gradually decreases from 500,000,000 ISK at
+          20 members to 0 ISK at 500 members.
+
+          <div class="formula">
+            Base Cost = 500,000,000 × (500 − Members) ÷ 480
+          </div>
+        </div>
+
+        <div class="rule">
+          <strong>500 members</strong><br>
+          War cost from the defender-size calculation becomes free.
+        </div>
+
+        <div class="rule">
+          <strong>Attacker active wars</strong><br>
+          The multiplier increases linearly from 1.00× at one active war
+          to 2.00× at ten active wars. Ten or more active wars remain at
+          2.00× with no additional increase.
+
+          <div class="formula">
+            1 war = 1.00×<br>
+            2 wars = 1.11×<br>
+            3 wars = 1.22×<br>
+            4 wars = 1.33×<br>
+            5 wars = 1.44×<br>
+            6 wars = 1.56×<br>
+            7 wars = 1.67×<br>
+            8 wars = 1.78×<br>
+            9 wars = 1.89×<br>
+            10+ wars = 2.00×
+          </div>
+        </div>
+
+        <div class="rule">
+          <strong>Weekly bill</strong><br>
+          The weekly war bill is the defending corporation's base cost
+          multiplied by the attacker's active-war multiplier.
+
+          <div class="formula">
+            Weekly Bill = Base Cost × Active War Multiplier
+          </div>
+        </div>
+
+        <div class="rule">
+          <strong>War duration</strong><br>
+          A war lasts for a maximum of one week and does not automatically
+          extend. If no surrender is accepted, the war ends when the
+          one-week period expires.
+        </div>
+
+        <div class="rule">
+          <strong>Surrender</strong><br>
+          Surrender is available only during the first week. The CEOs must
+          meet in a station. The defending CEO must press Accept on the
+          attacking CEO's surrender terms. If the terms are not accepted,
+          the war continues until the one-week expiration.
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const membersSlider = document.getElementById("members");
+    const warsSlider = document.getElementById("wars");
+
+    const membersValue = document.getElementById("membersValue");
+    const warsValue = document.getElementById("warsValue");
+    const weeklyCost = document.getElementById("weeklyCost");
+    const resultDetails = document.getElementById("resultDetails");
+
+    function calculateBaseCost(members) {
+
+      if (members < 10) {
+        return 0;
+      }
+
+      if (members <= 20) {
+        return 1000000000 - ((members - 10) * 50000000);
+      }
+
+      if (members <= 500) {
+        return 500000000 * ((500 - members) / 480);
+      }
+
+      return 0;
+    }
+
+    function calculateWarMultiplier(wars) {
+
+      if (wars >= 10) {
+        return 2.0;
+      }
+
+      return 1 + ((wars - 1) / 9);
+    }
+
+    function formatISK(amount) {
+      return Math.round(amount).toLocaleString("en-US") + " ISK";
+    }
+
+    function updateCalculator() {
+
+      const members = Number(membersSlider.value);
+      const wars = Number(warsSlider.value);
+
+      const baseCost = calculateBaseCost(members);
+      const multiplier = calculateWarMultiplier(wars);
+      const totalCost = baseCost * multiplier;
+
+      membersValue.textContent = members;
+      warsValue.textContent = wars >= 10 ? "10+" : wars;
+
+      if (members < 10) {
+
+        weeklyCost.textContent = "WAR IMMUNE";
+        weeklyCost.className = "result-amount immune";
+
+        resultDetails.textContent =
+          "Corporations with fewer than 10 members cannot be declared war upon.";
+
+      } else if (totalCost <= 0) {
+
+        weeklyCost.textContent = "FREE";
+        weeklyCost.className = "result-amount free";
+
+        resultDetails.textContent =
+          `${members} defenders × ${wars >= 10 ? "10+" : wars} active wars × ${multiplier.toFixed(2)}×`;
+
+      } else {
+
+        weeklyCost.textContent = formatISK(totalCost);
+        weeklyCost.className = "result-amount";
+
+        resultDetails.textContent =
+          `${members} defenders × ${wars >= 10 ? "10+" : wars} active wars × ${multiplier.toFixed(2)}×`;
+      }
+    }
+
+    membersSlider.addEventListener("input", updateCalculator);
+    warsSlider.addEventListener("input", updateCalculator);
+
+    updateCalculator();
+  </script>
+
+</body>
+</html>
+```
